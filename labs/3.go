@@ -33,7 +33,13 @@ func postMenu(logger *log.Logger, reader *bufio.Reader) bool {
 
 func Run3(logger *log.Logger, reader *bufio.Reader) {
 	for {
-		logger.Println("Введите номер задачи (1-5); 0 - Выход: ")
+		logger.Println("Введите номер задачи: ")
+		logger.Println("1 - Анализатор успеваемости группы")
+		logger.Println("2 - Умный калькулятор с историей операций")
+		logger.Println("3 - Детектор палиндромов и анаграмм")
+		logger.Println("4 - Транспонирование матрицы произвольного размера")
+		logger.Println("5 - Система управления библиотекой книг")
+		logger.Println("0 - Выход")
 
 		n, err := utils.ReadInt(reader)
 		if err != nil {
@@ -63,6 +69,10 @@ func Run3(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 3:
+			for runAgain {
+				task3_3(logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 4:
 		case 5:
 		default:
@@ -196,4 +206,80 @@ func task3_2(logger *log.Logger, reader *bufio.Reader, operationLog *OperationLo
 	logger.Println(move)
 
 	operationLog.Add(logger, move)
+}
+
+func task3_3(logger *log.Logger, reader *bufio.Reader) {
+	logger.Print("Введите строку от 3 до 15 символов: ")
+
+	str, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err.Error())
+		return
+	}
+
+	if !utils.CheckStringLength(str, 3, 15) {
+		logger.Println("Длина строки не соответствует требованиям!")
+		return
+	}
+
+	logger.Println("Выберите действие со строкой:")
+	logger.Println("1 - Проверка на палиндром")
+	logger.Println("2 - Проверка на анограммы")
+	logger.Println("3 - Ревёрс строки")
+	logger.Println("4 - Подсчёт количество слов в строке")
+	logger.Println("5 - Поиск самого длинного слова")
+	logger.Println("6 - Очистка строки от не-буквенных символов")
+	logger.Println("0 - Выход")
+
+	choice, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	switch choice {
+	case 0:
+		logger.Println("Выхожу...")
+		return
+	case 1:
+		checkPalindrome(str, logger)
+	case 2:
+		checkAnagram(str, logger, reader)
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	default:
+		logger.Println("Неверный выбор")
+		return
+	}
+}
+
+func checkPalindrome(str string, logger *log.Logger) {
+	if utils.IsPalindrome(str) {
+		logger.Printf("Строка %s является палиндромом.\n", str)
+	} else {
+		logger.Printf("Строка %s не является палиндромом.\n", str)
+	}
+}
+
+func checkAnagram(str1 string, logger *log.Logger, reader *bufio.Reader) {
+	logger.Print("Введите вторую строку от 3 до 15 символов: ")
+
+	str2, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err.Error())
+		return
+	}
+
+	if !utils.CheckStringLength(str2, 3, 15) {
+		logger.Println("Длина строки не соответствует требованиям!")
+		return
+	}
+
+	if utils.IsAnagram(str1, str2) {
+		logger.Printf("Строки %s и %s являются анаграммами.\n", str1, str2)
+	} else {
+		logger.Printf("Строки %s и %s не являются анаграммами.\n", str1, str2)
+	}
 }
