@@ -74,6 +74,10 @@ func Run3(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 4:
+			for runAgain {
+				task3_4(logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 5:
 		default:
 			logger.Println("Задача не найдена!")
@@ -310,4 +314,58 @@ func clearString(str string, logger *log.Logger) {
 	newString := utils.ClearString(str)
 
 	logger.Println("Новая строка:", newString)
+}
+
+func task3_4(logger *log.Logger, reader *bufio.Reader) {
+	logger.Print("Введите количество строк матрицы: ")
+	rows, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	logger.Print("Введите количество столбцов матрицы: ")
+	columns, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	matrix := make([][]int, rows)
+	sum := 0
+
+	for i := 0; i < rows; i++ {
+		for j := 0; j < columns; j++ {
+			num := rand.Int()%90 + 10
+			sum += num
+			matrix[i] = append(matrix[i], num)
+		}
+	}
+
+	logger.Println("ВЫВОД МАТРИЦЫ:")
+	printMatrix(matrix)
+
+	tMatrix := make([][]int, columns)
+
+	for i := 0; i < columns; i++ {
+		for j := 0; j < rows; j++ {
+			num := matrix[j][i]
+			tMatrix[i] = append(tMatrix[i], num)
+		}
+	}
+
+	logger.Println("ВЫВОД ТРАНСПОНИРОВАННОЙ МАТРИЦЫ:")
+	printMatrix(tMatrix)
+
+	logger.Printf("Сумма всех элементов матрицы: %d\n", sum)
+}
+
+func printMatrix(matrix [][]int) {
+	for i := 0; i < len(matrix); i++ {
+		fmt.Print(" | ")
+		for j := 0; j < len(matrix[i]); j++ {
+			fmt.Printf("%d ", matrix[i][j])
+		}
+		fmt.Print("|\n")
+	}
 }
