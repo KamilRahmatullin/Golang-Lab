@@ -3,6 +3,7 @@ package utils
 import (
 	"reflect"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -53,4 +54,56 @@ func IsAnagram(word1, word2 string) bool {
 	} else {
 		return false
 	}
+}
+
+func Reverse(str *string) {
+	var newString string
+
+	for _, char := range *str {
+		newString = string(char) + newString
+	}
+
+	*str = newString
+}
+
+func WordsCount(str string) int {
+	total := 1
+	for _, char := range str {
+		if unicode.IsSpace(char) {
+			total++
+		}
+	}
+
+	return total
+}
+
+func FindLongestWord(str string) string {
+	var longestWord string = ""
+
+	words := strings.Split(str, " ")
+
+	for _, word := range words {
+		word = strings.TrimSuffix(word, ",")
+		word = strings.TrimSuffix(word, ".")
+		word = strings.TrimSuffix(word, "!")
+		word = strings.TrimSuffix(word, "?")
+
+		if len(word) > len(longestWord) {
+			longestWord = word
+		}
+	}
+
+	return longestWord
+}
+
+func ClearString(str string) string {
+	newS := ""
+
+	for _, ch := range str {
+		if unicode.IsLetter(ch) {
+			newS = newS + string(ch)
+		}
+	}
+
+	return newS
 }

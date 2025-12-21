@@ -246,9 +246,13 @@ func task3_3(logger *log.Logger, reader *bufio.Reader) {
 	case 2:
 		checkAnagram(str, logger, reader)
 	case 3:
+		reverseString(&str, logger)
 	case 4:
+		checkWordsCount(str, logger)
 	case 5:
+		checkTheLongestWord(str, logger)
 	case 6:
+		clearString(str, logger)
 	default:
 		logger.Println("Неверный выбор")
 		return
@@ -282,4 +286,28 @@ func checkAnagram(str1 string, logger *log.Logger, reader *bufio.Reader) {
 	} else {
 		logger.Printf("Строки %s и %s не являются анаграммами.\n", str1, str2)
 	}
+}
+
+func reverseString(str *string, logger *log.Logger) {
+	utils.Reverse(str)
+
+	logger.Println("Новая строка:", *str)
+}
+
+func checkWordsCount(str string, logger *log.Logger) {
+	count := utils.WordsCount(str)
+
+	logger.Printf("В строке %s числится %d слов", str, count)
+}
+
+func checkTheLongestWord(str string, logger *log.Logger) {
+	word := utils.FindLongestWord(str)
+
+	logger.Println("Самое длинное слово:", word)
+}
+
+func clearString(str string, logger *log.Logger) {
+	newString := utils.ClearString(str)
+
+	logger.Println("Новая строка:", newString)
 }
