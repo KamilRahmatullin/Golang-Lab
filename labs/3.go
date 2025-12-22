@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"sort"
 
 	"github.com/kamilrahmatullin/lab/utils"
 )
@@ -79,6 +80,11 @@ func Run3(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 5:
+			books := make([]*Book, 0)
+			for runAgain {
+				task3_5(logger, reader, &books)
+				runAgain = postMenu(logger, reader)
+			}
 		default:
 			logger.Println("Задача не найдена!")
 		}
@@ -367,5 +373,166 @@ func printMatrix(matrix [][]int) {
 			fmt.Printf("%d ", matrix[i][j])
 		}
 		fmt.Print("|\n")
+	}
+}
+
+type Book struct {
+	ID          uint
+	Title       string
+	Author      string
+	PublishYear uint
+}
+
+var nextBookId uint = 1
+
+func task3_5(logger *log.Logger, reader *bufio.Reader, books *[]*Book) {
+	logger.Println("Выберите действие:")
+	logger.Println("1 - Добавление новой книги (название, автор, год издания)")
+	logger.Println("2 - Поиск книги по названию или автору")
+	logger.Println("3 - Вывод всех книг определенного автора")
+	logger.Println("4 - Удаление книги из системы")
+	logger.Println("5 - Сортировка книг по году издания")
+
+	ch, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	switch ch {
+	case 1:
+		addBook(logger, reader, books)
+		break
+	case 2:
+		foundedBooks := searchBooks(logger, reader, books)
+
+		if foundedBooks == nil || len(foundedBooks) == 0 {
+			logger.Println("Ни одной книги не было найдено")
+			return
+		}
+
+		for _, book := range foundedBooks {
+			readBook(book)
+		}
+		break
+	case 3:
+		foundedBooks := searchBooksByAuthor(logger, reader, books)
+
+		if foundedBooks == nil || len(foundedBooks) == 0 {
+			logger.Println("Ни одной книги не было найдено")
+			return
+		}
+
+		for _, book := range foundedBooks {
+			readBook(book)
+		}
+		break
+	case 4:
+		removeBook(logger, reader, books)
+	case 5:
+		sortBooks(*books)
+	default:
+		logger.Println("Выбор не распознан!")
+	}
+}
+
+func addBook(logger *log.Logger, reader *bufio.Reader, books *[]*Book) {
+	logger.Print("Укажите название для книги: ")
+	title, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	logger.Print("Укажите имя автора: ")
+	author, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	logger.Print("Укажите год издания книги: ")
+	year, err := utils.ReadUint(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	newBook := &Book{ID: nextBookId, Title: title, Author: author, PublishYear: year}
+	nextBookId++
+
+	*books = append(*books, newBook)
+}
+
+func searchBooks(logger *log.Logger, reader *bufio.Reader, books *[]*Book) []*Book {
+	logger.Print("Укажите название или автора книги: ")
+	name, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return nil
+	}
+	foundedBooks := []*Book{}
+
+	for _, book := range *books {
+		if utils.CheckContainWord(name, book.Author) || utils.CheckContainWord(name, book.Title) {
+			foundedBooks = append(foundedBooks, book)
+		}
+	}
+
+	return foundedBooks
+}
+
+func searchBooksByAuthor(logger *log.Logger, reader *bufio.Reader, books *[]*Book) []*Book {
+	logger.Print("Укажите имя автора: ")
+	name, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return nil
+	}
+	foundedBooks := []*Book{}
+
+	for _, book := range *books {
+		if utils.CheckContainWord(name, book.Author) {
+			foundedBooks = append(foundedBooks, book)
+		}
+	}
+
+	return foundedBooks
+}
+
+func readBook(book *Book) {
+	fmt.Printf("| %d. Название: %s  |  Автор: %s  |  Год: %d |\n", book.ID, book.Title, book.Author, book.PublishYear)
+}
+
+func removeBook(logger *log.Logger, reader *bufio.Reader, books *[]*Book) {
+	for _, book := range *books {
+		readBook(book)
+	}
+
+	logger.Print("\nВыберите ID книги для удаления: ")
+	id, err := utils.ReadUint(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	for i, book := range *books {
+		if book.ID == id {
+			*books = append((*books)[:i], (*books)[i+1:]...)
+			logger.Println("Книга успешно удалена.")
+			return
+		}
+	}
+
+	logger.Println("Книги с таким ID не было найдено!")
+}
+
+func sortBooks(books []*Book) {
+	sort.Slice(books, func(i, j int) bool {
+		return books[i].PublishYear > books[j].PublishYear
+	})
+
+	for _, book := range books {
+		readBook(book)
 	}
 }

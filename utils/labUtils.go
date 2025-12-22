@@ -107,3 +107,13 @@ func ClearString(str string) string {
 
 	return newS
 }
+
+func CheckContainWord(word string, str string) bool {
+	word = strings.ToLower(word)
+	str = strings.ToLower(str)
+	if strings.Contains(str, word) {
+		return true
+	} else {
+		return false
+	}
+}

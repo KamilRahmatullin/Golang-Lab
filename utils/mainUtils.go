@@ -51,6 +51,24 @@ func ReadInt(reader *bufio.Reader) (int, error) {
 	return value, nil
 }
 
+func ReadUint(reader *bufio.Reader) (uint, error) {
+	n, err := reader.ReadString('\n')
+	if err != nil {
+		return 0, errors.New("Enter error: " + err.Error())
+	}
+
+	value, err := readChoice(n)
+	if err != nil {
+		return 0, errors.New("Convert error: " + err.Error())
+	}
+
+	if value < 0 {
+		return 0, errors.New("Value must be positive!")
+	}
+
+	return uint(value), nil
+}
+
 func ReadString(reader *bufio.Reader) (string, error) {
 	n, err := reader.ReadString('\n')
 	if err != nil {
