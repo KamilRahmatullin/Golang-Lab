@@ -55,13 +55,15 @@ type Student struct {
 
 type Subject struct {
 	SubjectName string
-	Grade       uint
+	Grade       int
 }
 
 type SubjectInfo struct {
 	TotalCount  int
-	TotalGrades uint
+	TotalGrades int
 }
+
+const minAvgGrade = 3.5
 
 func task4_1(logger *log.Logger, reader *bufio.Reader) {
 	students := getStudents(logger, reader)
@@ -87,7 +89,7 @@ func task4_1(logger *log.Logger, reader *bufio.Reader) {
 
 		avg := float64(totalGrade) / float64(totalCount)
 
-		if avg > 3.5 {
+		if avg > minAvgGrade {
 			logger.Printf(" | Студент %s | Средний балл %.2f |\n", student.Name, avg)
 		} else {
 			logger.Printf(" | Студент %s | Средний балл %.2f | ПРОБЛЕМА С ОЦЕНКОЙ!!! \n", student.Name, avg)
@@ -107,7 +109,7 @@ func sortStudents(students []Student) {
 			sj += int(subject.Grade)
 		}
 
-		return si > sj
+		return float64(si)/float64(len(students[i].Subjects)) > float64(sj)/float64(len(students[j].Subjects))
 	})
 }
 
@@ -123,12 +125,10 @@ func getStudents(logger *log.Logger, reader *bufio.Reader) []Student {
 
 		subjects := getSubjects(logger, reader)
 
-		student := &Student{
+		students = append(students, Student{
 			Name:     name,
 			Subjects: subjects,
-		}
-
-		students = append(students, *student)
+		})
 
 		logger.Println("Хотите продолжить ввод студентов? 1 - ДА / 0 - НЕТ")
 		ch, err := utils.ReadInt(reader)
@@ -155,7 +155,7 @@ func getSubjects(logger *log.Logger, reader *bufio.Reader) []Subject {
 			return subjects
 		}
 		logger.Printf("Введите оценку для предмета (1-5) %s: ", subjectName)
-		grade, err := utils.ReadUint(reader)
+		grade, err := utils.ReadInt(reader)
 		if err != nil {
 			logger.Println(err)
 			return subjects
