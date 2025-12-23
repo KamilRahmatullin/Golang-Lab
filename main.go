@@ -39,6 +39,8 @@ func main() {
 			labs.Run2(logger, reader)
 		case 3:
 			labs.Run3(logger, reader)
+		case 4:
+			labs.Run4(logger, reader)
 		default:
 			logger.Println("We could not find this lab. Bye!")
 		}
