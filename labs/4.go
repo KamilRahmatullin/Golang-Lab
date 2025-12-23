@@ -71,6 +71,12 @@ func task4_1(logger *log.Logger, reader *bufio.Reader) {
 	subjectInfos := getSubjectInfos(students)
 
 	for name, info := range subjectInfos {
+
+		if info.TotalCount == 0 {
+			logger.Printf(" | Предмет %s пуст |\n", name)
+			continue
+		}
+
 		avg := float64(info.TotalGrades) / float64(info.TotalCount)
 		logger.Printf(" | Предмет %s  |  Средний балл %.2f |\n", name, avg)
 	}
@@ -85,6 +91,11 @@ func task4_1(logger *log.Logger, reader *bufio.Reader) {
 
 		for _, subject := range student.Subjects {
 			totalGrade += int(subject.Grade)
+		}
+
+		if totalCount == 0 {
+			logger.Printf(" | Студент %s | У СТУДЕНТА НЕТ ОЦЕНОК |\n", student.Name)
+			continue
 		}
 
 		avg := float64(totalGrade) / float64(totalCount)
@@ -166,12 +177,10 @@ func getSubjects(logger *log.Logger, reader *bufio.Reader) []Subject {
 			continue
 		}
 
-		subject := &Subject{
+		subjects = append(subjects, Subject{
 			SubjectName: subjectName,
 			Grade:       grade,
-		}
-
-		subjects = append(subjects, *subject)
+		})
 
 		logger.Println("Хотите продолжить ввод предметов? 1 - ДА / 0 - НЕТ")
 		ch, err := utils.ReadInt(reader)
