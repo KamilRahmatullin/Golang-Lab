@@ -2,8 +2,11 @@ package labs
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
+	"os"
 	"sort"
+	"strings"
 
 	"github.com/kamilrahmatullin/lab/utils"
 )
@@ -39,7 +42,16 @@ func Run4(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 2:
+			for runAgain {
+				task4_2(logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 3:
+			students := make([]StudentDB, 0)
+			for runAgain {
+				task4_3(&students, logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 4:
 		case 5:
 		default:
@@ -216,4 +228,269 @@ func getSubjectInfos(students []Student) map[string]*SubjectInfo {
 	}
 
 	return subjectInfos
+}
+
+const alfabetStart = 97
+const alfabetEnd = 122
+
+const alfabetStartRu = 1072
+const alfabetEndRu = 1103
+
+func task4_2(logger *log.Logger, reader *bufio.Reader) {
+	logger.Println("Выберите язык: 1 - EN; 2 - RU")
+	lang, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	logger.Println("Введите текст от 3 до 25 символов:")
+
+	text, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	if len(text) < 3 || len(text) > 25 {
+		logger.Println("Длина текста должна быть от 3 до 25 символов")
+		return
+	}
+
+	logger.Println("Введите сдвиг от 0 до 25:")
+	move, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	if move < 0 || move > 25 {
+		logger.Println("Сдвиг должен быть от 0 до 25")
+		return
+	}
+	var cipheredText string
+	switch lang {
+	case 1:
+		cipheredText = enCipher(text, move)
+	case 2:
+		cipheredText = ruCipher(text, move)
+	default:
+		cipheredText = enCipher(text, move)
+	}
+
+	logger.Printf("Зашифрованный текст: %s", cipheredText)
+
+	letters := utils.TextLettersAnalyze(text)
+	for letter, count := range letters {
+		logger.Printf(" | Буква %s использована %d раз\n", letter, count)
+	}
+
+	wordsPalindromes := utils.SearchPalindromes(text)
+	if len(wordsPalindromes) == 0 {
+		logger.Println("В тексте нет палиндромов")
+	} else {
+		logger.Printf("В тексте %d палидромов:\n", len(wordsPalindromes))
+		for _, palindrome := range wordsPalindromes {
+			logger.Println(" >", palindrome)
+		}
+	}
+}
+
+func enCipher(text string, move int) string {
+	newText := ""
+
+	for _, ch := range text {
+		newR := int(ch) + move
+		if newR > alfabetEnd {
+			newR = alfabetStart + (newR - alfabetEnd - 1)
+		}
+
+		newText += string(rune(newR))
+	}
+
+	return newText
+}
+
+func ruCipher(text string, move int) string {
+	newText := ""
+
+	for _, ch := range text {
+		newR := int(ch) + move
+		if newR > alfabetEndRu {
+			newR = alfabetStartRu + (newR - alfabetEnd - 1)
+		}
+
+		newText += string(rune(newR))
+	}
+
+	return newText
+}
+
+type StudentDB struct {
+	Name     string   `json:"name"`
+	Age      int      `json:"age"`
+	AvgRate  float64  `json:"avg_rate"`
+	Subjects []string `json:"subjects"`
+}
+
+func task4_3(students *[]StudentDB, logger *log.Logger, reader *bufio.Reader) {
+	logger.Println("Выберите ваше действие 1 - Добавление, 2 - Просмотр, 3 - Поиск, 4 - Экспорт:")
+	move, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	switch move {
+	case 1:
+		*students = addStudent(*students, logger, reader)
+	case 2:
+		readStudents(*students, logger, reader)
+	case 3:
+		searchStudents(*students, logger, reader)
+	case 4:
+		exportFile(*students, logger, reader)
+	default:
+		logger.Println("Действие не найдено!")
+	}
+}
+
+func addStudent(students []StudentDB, logger *log.Logger, reader *bufio.Reader) []StudentDB {
+	logger.Println("Введите имя студента:")
+	name, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return students
+	}
+
+	logger.Println("Введите возраст студента:")
+	age, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return students
+	}
+
+	logger.Println("Введите средний балл:")
+	avgRate, err := utils.ReadFloat(reader)
+	if err != nil {
+		logger.Println(err)
+		return students
+	}
+
+	subjects := make([]string, 0)
+	logger.Println("Вводите названия предметов по очереди, пустая строка = Выход:")
+	for {
+		logger.Print(" > ")
+		subject, err := utils.ReadString(reader)
+		if err != nil {
+			logger.Println(err)
+			break
+		}
+
+		if subject == "" {
+			break
+		}
+
+		subjects = append(subjects, subject)
+	}
+
+	student := StudentDB{
+		Name:     name,
+		Age:      age,
+		AvgRate:  avgRate,
+		Subjects: subjects,
+	}
+
+	students = append(students, student)
+	logger.Println("Студент успешно добавлен в список!")
+
+	return students
+}
+
+func readStudents(students []StudentDB, logger *log.Logger, reader *bufio.Reader) {
+	logger.Println("Выберите как будет проходить сортировка студентов (1 - По умолчанию; 2 - По среднему баллу; 3 - По возрасту):")
+	ch, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	switch ch {
+	case 1:
+	case 2:
+		sort.Slice(students, func(i, j int) bool {
+			return students[i].AvgRate > students[j].AvgRate
+		})
+	case 3:
+		sort.Slice(students, func(i, j int) bool {
+			return students[i].Age > students[j].Age
+		})
+	}
+
+	printAllStudents(students, logger)
+}
+
+func printAllStudents(students []StudentDB, logger *log.Logger) {
+	for i, student := range students {
+		printStudent(student, i, logger)
+	}
+}
+
+func searchStudents(students []StudentDB, logger *log.Logger, reader *bufio.Reader) {
+	logger.Print("Введите имя студента: ")
+	name, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	foundedStudents := make([]StudentDB, 0)
+
+	for _, student := range students {
+		if strings.EqualFold(name, student.Name) {
+			foundedStudents = append(foundedStudents, student)
+		}
+	}
+
+	if len(foundedStudents) == 0 {
+		logger.Println("Студент с таким именем не найден!")
+		return
+	}
+
+	for index, student := range foundedStudents {
+		printStudent(student, index, logger)
+	}
+}
+
+func printStudent(student StudentDB, index int, logger *log.Logger) {
+	logger.Printf(" %d) Имя: %s  |  Возраст: %d  |  Средний балл: %.2f  |  Предметы %s\n",
+		index, student.Name, student.Age, student.AvgRate, student.Subjects)
+}
+
+func exportFile(students []StudentDB, logger *log.Logger, reader *bufio.Reader) {
+	logger.Print("Введите желаемое имя файла:")
+	fileName, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	file, err := os.Create(fileName)
+	defer file.Close()
+	if err != nil {
+		logger.Println("Ошибка при создании файла: ", err.Error())
+		return
+	}
+
+	studentsJson, err := json.Marshal(students)
+	if err != nil {
+		logger.Println("Ошибка при форматировании студентов: ", err.Error())
+		return
+	}
+
+	if _, err = file.Write(studentsJson); err != nil {
+		logger.Println("Ошибка при записывании данных в файл: ", err.Error())
+		return
+	}
+	logger.Println("Данные успешно сохранены в файл", fileName)
 }

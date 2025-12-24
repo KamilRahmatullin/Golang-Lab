@@ -51,6 +51,21 @@ func ReadInt(reader *bufio.Reader) (int, error) {
 	return value, nil
 }
 
+func ReadFloat(reader *bufio.Reader) (float64, error) {
+	n, err := reader.ReadString('\n')
+	if err != nil {
+		return 0, errors.New("Enter error: " + err.Error())
+	}
+
+	value, err := strconv.ParseFloat(strings.TrimSpace(n), 64)
+
+	if err != nil {
+		return 0, errors.New("Convert error: " + err.Error())
+	}
+
+	return value, nil
+}
+
 func ReadUint(reader *bufio.Reader) (uint, error) {
 	n, err := reader.ReadString('\n')
 	if err != nil {

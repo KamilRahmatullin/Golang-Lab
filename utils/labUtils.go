@@ -117,3 +117,35 @@ func CheckContainWord(word string, str string) bool {
 		return false
 	}
 }
+
+func TextLettersAnalyze(text string) map[string]int {
+	letters := make(map[string]int)
+
+	for _, ch := range text {
+		if !unicode.IsLetter(ch) {
+			continue
+		}
+
+		res, ok := letters[string(ch)]
+		if !ok {
+			letters[string(ch)] = 1
+		} else {
+			letters[string(ch)] = res + 1
+		}
+	}
+
+	return letters
+}
+
+func SearchPalindromes(text string) []string {
+	palindromes := make([]string, 0)
+	words := strings.Fields(strings.ToLower(text))
+
+	for _, word := range words {
+		if IsPalindrome(word) {
+			palindromes = append(palindromes, word)
+		}
+	}
+
+	return palindromes
+}
