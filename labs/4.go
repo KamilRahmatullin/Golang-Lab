@@ -39,6 +39,10 @@ func Run4(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 2:
+			for runAgain {
+				task4_2(logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 3:
 		case 4:
 		case 5:
@@ -216,4 +220,100 @@ func getSubjectInfos(students []Student) map[string]*SubjectInfo {
 	}
 
 	return subjectInfos
+}
+
+const alfabetStart = 97
+const alfabetEnd = 122
+
+const alfabetStartRu = 1072
+const alfabetEndRu = 1103
+
+func task4_2(logger *log.Logger, reader *bufio.Reader) {
+	logger.Println("Выберите язык: 1 - EN; 2 - RU")
+	lang, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	logger.Println("Введите текст от 3 до 25 символов:")
+
+	text, err := utils.ReadString(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	if len(text) < 3 || len(text) > 25 {
+		logger.Println("Длина текста должна быть от 3 до 25 символов")
+		return
+	}
+
+	logger.Println("Введите сдвиг от 0 до 25:")
+	move, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	if move < 0 || move > 25 {
+		logger.Println("Сдвиг должен быть от 0 до 25")
+		return
+	}
+	var cipheredText string
+	switch lang {
+	case 1:
+		cipheredText = enCipher(text, move)
+	case 2:
+		cipheredText = ruCipher(text, move)
+	default:
+		cipheredText = enCipher(text, move)
+	}
+
+	logger.Printf("Зашифрованный текст: %s", cipheredText)
+
+	letters := utils.TextLettersAnalyze(text)
+	for letter, count := range letters {
+		logger.Printf(" | Буква %s использована %d раз\n", letter, count)
+	}
+
+	wordsPalindromes := utils.SearchPalindromes(text)
+	if len(wordsPalindromes) == 0 {
+		logger.Println("В тексте нет палиндромов")
+	} else {
+		logger.Printf("В тексте %d палидромов:\n", len(wordsPalindromes))
+		for _, palindrome := range wordsPalindromes {
+			logger.Println(" >", palindrome)
+		}
+	}
+}
+
+func enCipher(text string, move int) string {
+	newText := ""
+
+	for _, ch := range text {
+		newR := int(ch) + move
+		if newR > alfabetEnd {
+			newR = alfabetStart + (newR - alfabetEnd - 1)
+		}
+
+		newText += string(rune(newR))
+	}
+
+	return newText
+}
+
+func ruCipher(text string, move int) string {
+	newText := ""
+
+	for _, ch := range text {
+		newR := int(ch) + move
+		if newR > alfabetEndRu {
+			newR = alfabetStartRu + (newR - alfabetEnd - 1)
+		}
+
+		newText += string(rune(newR))
+	}
+
+	return newText
 }
