@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"log"
-	"os"
 	"sort"
 	"strings"
 
@@ -349,7 +348,7 @@ func task4_3(students *[]StudentDB, logger *log.Logger, reader *bufio.Reader) {
 	case 3:
 		searchStudents(*students, logger, reader)
 	case 4:
-		exportFile(*students, logger, reader)
+		exportStudentsFile(*students, logger, reader)
 	default:
 		logger.Println("Действие не найдено!")
 	}
@@ -467,30 +466,23 @@ func printStudent(student StudentDB, index int, logger *log.Logger) {
 		index, student.Name, student.Age, student.AvgRate, student.Subjects)
 }
 
-func exportFile(students []StudentDB, logger *log.Logger, reader *bufio.Reader) {
+func exportStudentsFile(students []StudentDB, logger *log.Logger, reader *bufio.Reader) {
 	logger.Print("Введите желаемое имя файла:")
 	fileName, err := utils.ReadString(reader)
 	if err != nil {
 		logger.Println(err)
 		return
 	}
-
-	file, err := os.Create(fileName)
-	defer file.Close()
-	if err != nil {
-		logger.Println("Ошибка при создании файла: ", err.Error())
-		return
-	}
-
 	studentsJson, err := json.Marshal(students)
 	if err != nil {
 		logger.Println("Ошибка при форматировании студентов: ", err.Error())
 		return
 	}
 
-	if _, err = file.Write(studentsJson); err != nil {
-		logger.Println("Ошибка при записывании данных в файл: ", err.Error())
+	if err = utils.ExportFile(studentsJson, fileName); err != nil {
+		logger.Println(err)
 		return
 	}
+
 	logger.Println("Данные успешно сохранены в файл", fileName)
 }

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"unicode"
@@ -148,4 +150,18 @@ func SearchPalindromes(text string) []string {
 	}
 
 	return palindromes
+}
+
+func ExportFile(data []byte, filename string) error {
+	file, err := os.Create(filename)
+	defer file.Close()
+	if err != nil {
+		return fmt.Errorf("Ошибка при создании файла: %s\n", err.Error())
+	}
+
+	if _, err = file.Write(data); err != nil {
+		return fmt.Errorf("Ошибка при записывании данных в файл: %s\n", err.Error())
+	}
+
+	return nil
 }
