@@ -570,9 +570,6 @@ func task4_4(books []BookDB, logger *log.Logger, reader *bufio.Reader) {
 
 		switch ch {
 		case 1:
-			sort.Slice(books, func(i, j int) bool {
-				return i < j
-			})
 		case 2:
 			sort.Slice(books, func(i, j int) bool {
 				return books[i].Genre > books[j].Genre
@@ -643,13 +640,14 @@ func readBooks(books []BookDB, logger *log.Logger) {
 func searchBook(name string, books []BookDB, logger *log.Logger) {
 	foundedBooks := make([]BookDB, 0)
 	for _, book := range books {
-		if strings.EqualFold(book.Author, name) || strings.EqualFold(book.Title, name) || strings.EqualFold(book.Genre, name) {
+		if strings.Contains(strings.ToLower(book.Author), strings.ToLower(name)) || strings.Contains(strings.ToLower(book.Genre), strings.ToLower(name)) || strings.Contains(strings.ToLower(book.Title), strings.ToLower(name)) {
 			foundedBooks = append(foundedBooks, book)
 		}
 	}
 
 	if len(foundedBooks) == 0 {
 		logger.Println("Ни одной книги не было найдено!")
+		return
 	}
 
 	readBooks(foundedBooks, logger)
