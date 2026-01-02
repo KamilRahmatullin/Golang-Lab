@@ -52,6 +52,14 @@ func Run4(logger *log.Logger, reader *bufio.Reader) {
 				runAgain = postMenu(logger, reader)
 			}
 		case 4:
+			books := make([]BookDB, 0)
+
+			books = addBooks(books)
+
+			for runAgain {
+				task4_4(books, logger, reader)
+				runAgain = postMenu(logger, reader)
+			}
 		case 5:
 		default:
 			logger.Println("Задача не найдена!")
@@ -485,4 +493,164 @@ func exportStudentsFile(students []StudentDB, logger *log.Logger, reader *bufio.
 	}
 
 	logger.Println("Данные успешно сохранены в файл", fileName)
+}
+
+type BookDB struct {
+	Title       string
+	Author      string
+	Publishment int
+	Genre       string
+	IsAvailable bool
+}
+
+func addBooks(books []BookDB) []BookDB {
+	book1 := BookDB{
+		Title:       "The Great Gatsby",
+		Author:      "F. Scott Fitzgerald",
+		Publishment: 1925,
+		Genre:       "Classic",
+		IsAvailable: true,
+	}
+
+	book2 := BookDB{
+		Title:       "To Kill a Mockingbird",
+		Author:      "Harper Lee",
+		Publishment: 1960,
+		Genre:       "Classic",
+		IsAvailable: true,
+	}
+
+	book3 := BookDB{
+		Title:       "Pride and Prejudice",
+		Author:      "Jane Austen",
+		Publishment: 1813,
+		Genre:       "Classic",
+		IsAvailable: true,
+	}
+
+	book4 := BookDB{
+		Title:       "The Catcher in the Rye",
+		Author:      "J.D. Salinger",
+		Genre:       "Coming of Age",
+		IsAvailable: true,
+		Publishment: 1951,
+	}
+
+	books = append(books, book1)
+	books = append(books, book2)
+	books = append(books, book3)
+	books = append(books, book4)
+
+	return books
+}
+
+func task4_4(books []BookDB, logger *log.Logger, reader *bufio.Reader) {
+	logger.Println("1. Просмотр каталога")
+	logger.Println("2. Поиск книги")
+	logger.Println("3. Получить книгу")
+	logger.Print("Выберите действие: ")
+	move, err := utils.ReadInt(reader)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+
+	switch move {
+	case 1:
+		logger.Println("1. По умолчанию")
+		logger.Println("2. По жанрам")
+		logger.Println("3. По годам")
+		logger.Println("4. По Доступности")
+		logger.Print("Выберите сортировку: ")
+		ch, err := utils.ReadInt(reader)
+		if err != nil {
+			logger.Println(err)
+			return
+		}
+
+		switch ch {
+		case 1:
+			sort.Slice(books, func(i, j int) bool {
+				return i < j
+			})
+		case 2:
+			sort.Slice(books, func(i, j int) bool {
+				return books[i].Genre > books[j].Genre
+			})
+		case 3:
+			sort.Slice(books, func(i, j int) bool {
+				return books[i].Publishment > books[j].Publishment
+			})
+		case 4:
+			sort.Slice(books, func(i, j int) bool {
+				if books[i].IsAvailable == true {
+					return true
+				}
+
+				return false
+			})
+		}
+
+		readBooks(books, logger)
+	case 2:
+		logger.Print("Введите название / автора / жанр книги для поиска: ")
+		name, err := utils.ReadString(reader)
+		if err != nil {
+			logger.Println(err)
+			return
+		}
+
+		searchBook(name, books, logger)
+	case 3:
+		readBooks(books, logger)
+
+		logger.Print("Введите номер книги, которую хотите забрать: ")
+		num, err := utils.ReadInt(reader)
+		if err != nil {
+			logger.Println(err)
+			return
+		}
+
+		if num < 1 || num > len(books) {
+			logger.Println("Такой книги не найдено!")
+			return
+		}
+
+		for i, book := range books {
+			if i == num-1 {
+				if !book.IsAvailable {
+					logger.Println("Данной книги нет в наличии")
+					break
+				}
+
+				book.IsAvailable = false
+				books[i] = book
+
+				logger.Printf("Книга %s была успешно получена!\n", book.Title)
+				break
+			}
+		}
+	}
+}
+
+func readBooks(books []BookDB, logger *log.Logger) {
+	for i, book := range books {
+		logger.Printf("%d) Название: %s  |  Автор: %s  |  Жанр:  %s  |  Год выпуска: %d  |  Доступность:  %t  |\n",
+			i+1, book.Title, book.Author, book.Genre, book.Publishment, book.IsAvailable)
+	}
+}
+
+func searchBook(name string, books []BookDB, logger *log.Logger) {
+	foundedBooks := make([]BookDB, 0)
+	for _, book := range books {
+		if strings.EqualFold(book.Author, name) || strings.EqualFold(book.Title, name) || strings.EqualFold(book.Genre, name) {
+			foundedBooks = append(foundedBooks, book)
+		}
+	}
+
+	if len(foundedBooks) == 0 {
+		logger.Println("Ни одной книги не было найдено!")
+	}
+
+	readBooks(foundedBooks, logger)
 }
